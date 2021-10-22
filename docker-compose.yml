@@ -1,0 +1,38 @@
+version: '3'
+name: my-nextjs-app
+services:
+  nextjs:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: nextjs
+    container_name: nextjs
+    restart: unless-stopped
+    # env_file: .env
+    # environment:
+    #   - MONGO_USERNAME=$MONGO_USERNAME
+    #   - MONGO_PASSWORD=$MONGO_PASSWORD
+    #   - MONGO_HOSTNAME=db
+    #   - MONGO_PORT=$MONGO_PORT
+    #   - MONGO_DB=$MONGO_DB
+    ports:
+      - "82:3000"
+    volumes:
+      - .:/home/node/app
+      - node_modules:/home/node/app/node_modules
+    networks:
+      - app-network
+    command: /usr/local/bin/npm run dev
+  
+  tests:
+    build: .
+    command: /bin/sh -c './wait-for.sh http://localhost:82 -- echo "The website is up !"'
+    depends_on:
+      - nextjs
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  node_modules:
